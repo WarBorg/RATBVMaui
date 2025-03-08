@@ -62,6 +62,58 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0"/>
+        <PackageReference Include="Refit" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="ViewModels\" />
+      <Folder Include="Views\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\RATBVData\RATBVData.Models\RATBVData.Models.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Update="Services\BusDataService.cs">
+            <DependentUpon>IBusDataService.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\BusRepository.cs">
+            <DependentUpon>IBusRepository.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\ConnectivityService.cs">
+            <DependentUpon>IConnectivityService.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\DefaultHttpMessageHandler.cs">
+            <DependentUpon>ICustomHttpMessageHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\InsecureHttpMessageHandler.cs">
+            <DependentUpon>ICustomHttpMessageHandler.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\DefaultHttpServiceOptions.cs">
+            <DependentUpon>IHttpServiceOptions.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\LocalHttpServiceOptions.cs">
+            <DependentUpon>IHttpServiceOptions.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\HttpService.cs">
+            <DependentUpon>IHttpService.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\CustomSQLiteAsyncConnection.cs">
+            <DependentUpon>ISQLiteAsyncConnection.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\SQLiteConnectionFactory.cs">
+            <DependentUpon>ISQLiteConnectionFactory.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\CustomSQLiteConnection.cs">
+            <DependentUpon>ISQLiteConnection.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\InMemorySQLiteConnectionFactory.cs">
+            <DependentUpon>ISQLiteConnectionFactory.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Services\DefaultSQLiteConnectionFactory.cs">
+            <DependentUpon>ISQLiteConnectionFactory.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>

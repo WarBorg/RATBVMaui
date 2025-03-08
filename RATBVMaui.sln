@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RATBVMaui", "RATBVMaui\RATBVMaui.csproj", "{F4DCFC66-087F-4B3D-8628-88FC94FCB3FF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RATBVData.Models", "RATBVData\RATBVData.Models\RATBVData.Models.csproj", "{8B22D688-7EA7-43E8-BECF-1E9C344EA545}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{F4DCFC66-087F-4B3D-8628-88FC94FCB3FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4DCFC66-087F-4B3D-8628-88FC94FCB3FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4DCFC66-087F-4B3D-8628-88FC94FCB3FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B22D688-7EA7-43E8-BECF-1E9C344EA545}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B22D688-7EA7-43E8-BECF-1E9C344EA545}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B22D688-7EA7-43E8-BECF-1E9C344EA545}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B22D688-7EA7-43E8-BECF-1E9C344EA545}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
