@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Acr.UserDialogs;
+using Microsoft.Extensions.Logging;
 using RATBVMaui.Services;
 using Refit;
 
@@ -26,7 +27,9 @@ public static class MauiProgram
             .RegisterApis()
             .RegisterSQLight()
             .RegisterServices()
-            .ConfigureEssentials();
+            .RegisterViewModels()
+            .ConfigureEssentials()
+            .UseUserDialogs();
             //.UseMauiCommunityToolkit()
 
 #if DEBUG
@@ -90,6 +93,15 @@ public static class MauiProgram
         builder.Services.AddSingleton<IConnectivityService, ConnectivityService>();
         builder.Services.AddSingleton<IBusDataService, BusDataService>();
         builder.Services.AddSingleton<IBusRepository, BusRepository>();
+
+        return builder;
+    }
+
+    private static MauiAppBuilder RegisterViewModels(this MauiAppBuilder builder)
+    {
+        builder.Services.AddSingleton<ViewModels.BusLinesViewModel>();
+        builder.Services.AddTransient<ViewModels.BusStationsViewModel>();
+        builder.Services.AddTransient<ViewModels.BusTimetablesViewModel>();
 
         return builder;
     }

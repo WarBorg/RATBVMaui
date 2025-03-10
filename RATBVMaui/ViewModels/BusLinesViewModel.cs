@@ -1,4 +1,4 @@
-using System.Windows.Input;
+using System.Collections.ObjectModel;
 using Acr.UserDialogs;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -20,11 +20,84 @@ public partial class BusLinesViewModel : BusViewModelBase
             ? $"Bus Lines - Updated on {LastUpdated}"
             : "Bus Lines";
 
-    public RangeObservableCollection<BusLinesItemViewModel> BusLines { get; } = [];
+    public RangeObservableCollection<BusLinesItemViewModel> BusLines =>
+    [
+        new(new BusLineModel
+            {
+                Name = "Bus 1",
+                Route = "Route 1"
+            },
+            _navigationService),
 
-    public RangeObservableCollection<BusLinesItemViewModel> MidiBusLines { get; } = [];
+        new(new BusLineModel
+            {
+                Name = "Bus 2",
+                Route = "Route 2"
+            },
+            _navigationService)
+    ];
 
-    public RangeObservableCollection<BusLinesItemViewModel> TrolleybusLines { get; } = [];
+    // Generate some fake data for the collection
+    public RangeObservableCollection<BusLinesItemViewModel> MidiBusLines =>
+    [
+        new(new BusLineModel
+            {
+                Name = "MidiBus 1",
+                Route = "Route 1"
+            },
+            _navigationService),
+
+        new(new BusLineModel
+            {
+                Name = "MidiBus 2",
+                Route = "Route 2"
+            },
+            _navigationService),
+        new(new BusLineModel
+            {
+                Name = "MidiBus 3",
+                Route = "Route 3"
+            },
+            _navigationService),
+        new(new BusLineModel
+            {
+                Name = "MidiBus 4",
+                Route = "Route 4"
+            },
+            _navigationService)
+    ];
+
+    public RangeObservableCollection<BusLinesItemViewModel> TrolleybusLines =>
+    [
+        new(new BusLineModel
+            {
+                Name = "Trolleybus 1",
+                Route = "Route 1"
+            },
+            _navigationService),
+
+        new(new BusLineModel
+            {
+                Name = "Trolleybus 2",
+                Route = "Route 2"
+            },
+            _navigationService),
+        new(new BusLineModel
+            {
+                Name = "Trolleybus 3",
+                Route = "Route 3"
+            },
+            _navigationService),
+        new(new BusLineModel
+            {
+                Name = "Trolleybus 4",
+                Route = "Route 4"
+            },
+            _navigationService)
+    ];
+
+    [ObservableProperty]
+    private ObservableCollection<BusLinesItemViewModel> _currentItems = [];
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Title))]
@@ -32,6 +105,9 @@ public partial class BusLinesViewModel : BusViewModelBase
 
     [ObservableProperty]
     private bool _isBusy;
+
+    [ObservableProperty]
+    private Color _testColor = Colors.Red;
 
     #endregion
 
@@ -89,15 +165,34 @@ public partial class BusLinesViewModel : BusViewModelBase
         //using (_userDilaogsService.Loading("Fetching Data... "))
         //{
         // Create tables, if they already exist nothing will happen
-        await _busDataService.CreateAllTablesAsync();
+        //await _busDataService.CreateAllTablesAsync();
 
-        await GetBusLinesAsync(isForcedRefresh: false);
+        //await GetBusLinesAsync(isForcedRefresh: false);
         //}
     }
 
     #endregion
 
     #region Methods
+
+    public void UpdateCurrentItems(string category)
+    {
+        CurrentItems = category switch
+        {
+            "Bus" => BusLines,
+            "MidiBus" => MidiBusLines,
+            "Trolleybus" => TrolleybusLines,
+            _ => CurrentItems
+        };
+
+        TestColor = category switch
+        {
+            "Bus" => Colors.Blue,
+            "MidiBus" => Colors.Orange,
+            "Trolleybus" => Colors.Green,
+            _ => Colors.Aquamarine
+        };
+    }
 
     private async Task GetBusLinesAsync(bool isForcedRefresh)
     {
@@ -166,11 +261,12 @@ public partial class BusLinesViewModel : BusViewModelBase
 
         private readonly INavigationService _navigationService;
 
-        public BusLinesItemViewModel(BusLineModel busLine,
+        public BusLinesItemViewModel(
+            BusLineModel busLine,
             INavigationService navigationService)
         {
             _busLine = busLine ?? throw new ArgumentNullException(nameof(busLine));
-            _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+            //_navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
 
             Name = _busLine.Name;
             Route = _busLine.Route;
