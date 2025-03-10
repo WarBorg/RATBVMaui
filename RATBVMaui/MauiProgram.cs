@@ -28,6 +28,7 @@ public static class MauiProgram
             .RegisterSQLight()
             .RegisterServices()
             .RegisterViewModels()
+            .RegisterViews()
             .ConfigureEssentials()
             .UseUserDialogs();
             //.UseMauiCommunityToolkit()
@@ -102,6 +103,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<ViewModels.BusLinesViewModel>();
         builder.Services.AddTransient<ViewModels.BusStationsViewModel>();
         builder.Services.AddTransient<ViewModels.BusTimetablesViewModel>();
+
+        return builder;
+    }
+
+    private static MauiAppBuilder RegisterViews(this MauiAppBuilder builder)
+    {
+        builder.Services.AddSingleton<AppShell>();
+        builder.Services.AddTransient<Views.BusLinesPage>();
 
         return builder;
     }

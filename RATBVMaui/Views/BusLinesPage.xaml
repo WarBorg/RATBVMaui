@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewmodels="clr-namespace:RATBVMaui.ViewModels"
+             x:Class="RATBVMaui.Views.BusLinesPage"
+             x:DataType="viewmodels:BusLinesViewModel"
+             BackgroundColor="{Binding TestColor}">
+    <ContentPage.Content>
+        <VerticalStackLayout>
+            <Label Text="Hello" VerticalOptions="Center" HorizontalOptions="Center"/>
+        <CollectionView ItemsSource="{Binding CurrentItems}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="viewmodels:BusLinesViewModel+BusLinesItemViewModel">
+                    <StackLayout Padding="{x:OnPlatform Android='5,0,0,0',
+                                                    iOS='15,0,0,0'}">
+                        <StackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ShowStationsForSelectedBusLineCommand}"/>
+                        </StackLayout.GestureRecognizers>
+                        <Label Style="{StaticResource NameLabelStyle}"
+                               Text="{Binding Name}"/>
+                        <Label Text="{Binding Route}"/>
+                        <BoxView IsVisible="{x:OnPlatform Android='False',
+                                                      iOS='True'}"
+                                 Style="{StaticResource ListSeparator}"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>
