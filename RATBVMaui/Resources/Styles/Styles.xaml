@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
 <?xaml-comp compile="true" ?>
-<ResourceDictionary 
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
@@ -392,7 +392,7 @@
             </VisualStateGroupList>
         </Setter>
     </Style>
-  
+
     <!--
     <Style TargetType="TitleBar">
         <Setter Property="MinimumHeightRequest" Value="32"/>
@@ -446,6 +446,38 @@
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource Magenta}, Dark={StaticResource White}}" />
         <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
+    </Style>
+
+    <!-- Bus App Styles -->
+    <Style x:Key="NameLabelStyle"
+           TargetType="Label">
+        <Setter Property="FontAttributes"
+                Value="Bold"/>
+        <Setter Property="FontSize"
+                Value="Large"/>
+    </Style>
+    <Style x:Key="LastUpdatedLabelStyle"
+           TargetType="Label">
+        <Setter Property="FontSize"
+                Value="Medium"/>
+        <Setter Property="HorizontalOptions"
+                Value="End"/>
+    </Style>
+    <Style x:Key="LastUpdatedStackLayoutStyle"
+           TargetType="StackLayout">
+        <Setter Property="Padding"
+                Value="0,5,5,0"/>
+        <Setter Property="IsVisible"
+                Value="{x:OnPlatform Default=True, WinUI=False}"/>
+    </Style>
+    <Style x:Key="ListSeparator"
+           TargetType="BoxView">
+        <Setter Property="HeightRequest"
+                Value="1" />
+        <Setter Property="BackgroundColor"
+                Value="#dadada" />
+        <Setter Property="VerticalOptions"
+                Value="End" />
     </Style>
 
 </ResourceDictionary>

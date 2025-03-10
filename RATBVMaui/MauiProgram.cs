@@ -77,8 +77,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ISQLiteAsyncConnection>(sp =>
         {
             var sqliteFactory = sp.GetRequiredService<ISQLiteConnectionFactory>();
-            var sqliteService = sp.GetRequiredService<ISQLiteService>();
-            return sqliteFactory.GetAsyncSqlConnection(sqliteService);
+            return sqliteFactory.GetAsyncSqlConnection();
         });
 
         return builder;
@@ -87,6 +86,7 @@ public static class MauiProgram
     private static MauiAppBuilder RegisterServices(this MauiAppBuilder builder)
     {
         // UI services
+        builder.Services.AddSingleton<INavigationService, NavigationService>();
         builder.Services.AddSingleton<IConnectivityService, ConnectivityService>();
         builder.Services.AddSingleton<IBusDataService, BusDataService>();
         builder.Services.AddSingleton<IBusRepository, BusRepository>();

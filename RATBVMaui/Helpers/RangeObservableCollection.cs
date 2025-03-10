@@ -74,11 +74,12 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     //------------------------------------------------------
 
     #region Public Properties
-    EqualityComparer<T>? _Comparer;
+
+    private EqualityComparer<T>? _comparer;
     public EqualityComparer<T> Comparer
     {
-        get => _Comparer ??= EqualityComparer<T>.Default;
-        private set => _Comparer = value;
+        get => _comparer ??= EqualityComparer<T>.Default;
+        private set => _comparer = value;
     }
 
     /// <summary>
@@ -122,27 +123,30 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="index"/> is not in the collection range.</exception>
     public void InsertRange(int index, IEnumerable<T> collection)
     {
-        if (collection == null)
-            throw new ArgumentNullException(nameof(collection));
-        if (index < 0)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        if (index > Count)
-            throw new ArgumentOutOfRangeException(nameof(index));
+        ArgumentNullException.ThrowIfNull(collection);
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, Count);
 
         if (!AllowDuplicates)
+        {
             collection =
                 collection
                     .Distinct(Comparer)
                     .Where(item => !Items.Contains(item, Comparer))
                     .ToList();
+        }
 
         if (collection is ICollection<T> countable)
         {
-            if (countable.Count == 0)
+            if (countable.Count is 0)
+            {
                 return;
+            }
         }
         else if (!collection.Any())
+        {
             return;
+        }
 
         CheckReentrancy();
 
@@ -152,8 +156,10 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
 
         OnEssentialPropertiesChanged();
 
-        if (!(collection is IList list))
+        if (collection is not IList list)
+        {
             list = new List<T>(collection);
+        }
 
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, list, index));
     }
@@ -166,53 +172,74 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
     public void RemoveRange(IEnumerable<T> collection)
     {
-        if (collection == null)
-            throw new ArgumentNullException(nameof(collection));
+        ArgumentNullException.ThrowIfNull(collection);
 
-        if (Count == 0)
-            return;
-        else if (collection is ICollection<T> countable)
+        if (Count is 0)
         {
-            if (countable.Count == 0)
+            return;
+        }
+
+        if (collection is ICollection<T> countable)
+        {
+            if (countable.Count is 0)
+            {
                 return;
-            else if (countable.Count == 1)
-                using (IEnumerator<T> enumerator = countable.GetEnumerator())
-                {
-                    enumerator.MoveNext();
-                    Remove(enumerator.Current);
-                    return;
-                }
+            }
+
+            if (countable.Count is 1)
+            {
+                using var enumerator = countable.GetEnumerator();
+
+                enumerator.MoveNext();
+                Remove(enumerator.Current);
+
+                return;
+            }
         }
         else if (!collection.Any())
+        {
             return;
+        }
 
         CheckReentrancy();
 
         var clusters = new Dictionary<int, List<T>>();
         var lastIndex = -1;
         List<T>? lastCluster = null;
-        foreach (T item in collection)
+
+        foreach (var item in collection)
         {
             var index = IndexOf(item);
             if (index < 0)
+            {
                 continue;
+            }
 
             Items.RemoveAt(index);
 
-            if (lastIndex == index && lastCluster != null)
+            if (lastIndex == index && lastCluster is not null)
+            {
                 lastCluster.Add(item);
+            }
             else
+            {
                 clusters[lastIndex = index] = lastCluster = new List<T> { item };
+            }
         }
 
         OnEssentialPropertiesChanged();
 
-        if (Count == 0)
+        if (Count is 0)
+        {
             OnCollectionReset();
+        }
         else
-            foreach (KeyValuePair<int, List<T>> cluster in clusters)
+        {
+            foreach (var cluster in clusters)
+            {
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, cluster.Value, cluster.Key));
-
+            }
+        }
     }
 
     /// <summary>
@@ -222,10 +249,8 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <param name="match"></param>
     /// <returns>Returns the number of elements that where </returns>
     /// <exception cref="ArgumentNullException"><paramref name="match"/> is null.</exception>
-    public int RemoveAll(Predicate<T> match)
-    {
-        return RemoveAll(0, Count, match);
-    }
+    public int RemoveAll(Predicate<T> match) =>
+        RemoveAll(0, Count, match);
 
     /// <summary>
     /// Iterates over the specified range within the collection and removes all items that satisfy the specified match.
@@ -240,17 +265,19 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <exception cref="ArgumentNullException"><paramref name="match"/> is null.</exception>
     public int RemoveAll(int index, int count, Predicate<T> match)
     {
-        if (index < 0)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
         if (index + count > Count)
+        {
             throw new ArgumentOutOfRangeException(nameof(index));
-        if (match == null)
-            throw new ArgumentNullException(nameof(match));
+        }
 
-        if (Count == 0)
+        ArgumentNullException.ThrowIfNull(match);
+
+        if (Count is 0)
+        {
             return 0;
+        }
 
         List<T>? cluster = null;
         var clusterIndex = -1;
@@ -261,7 +288,7 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
         {
             for (var i = 0; i < count; i++, index++)
             {
-                T item = Items[index];
+                var item = Items[index];
                 if (match(item))
                 {
                     Items.RemoveAt(index);
@@ -289,11 +316,15 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
             }
 
             if (clusterIndex > -1)
+            {
                 OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, cluster, clusterIndex));
+            }
         }
 
         if (removedCount > 0)
+        {
             OnEssentialPropertiesChanged();
+        }
 
         return removedCount;
     }
@@ -306,17 +337,20 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <exception cref="ArgumentOutOfRangeException">The specified range is exceeding the collection.</exception>
     public void RemoveRange(int index, int count)
     {
-        if (index < 0)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
+
         if (index + count > Count)
+        {
             throw new ArgumentOutOfRangeException(nameof(index));
+        }
 
-        if (count == 0)
+        if (count is 0)
+        {
             return;
+        }
 
-        if (count == 1)
+        if (count is 1)
         {
             RemoveItem(index);
             return;
@@ -324,7 +358,7 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
 
         //Items will always be List<T>, see constructors
         var items = (List<T>)Items;
-        List<T> removedItems = items.GetRange(index, count);
+        var removedItems = items.GetRange(index, count);
 
         CheckReentrancy();
 
@@ -332,10 +366,14 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
 
         OnEssentialPropertiesChanged();
 
-        if (Count == 0)
+        if (Count is 0)
+        {
             OnCollectionReset();
+        }
         else
+        {
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removedItems, index));
+        }
     }
 
     /// <summary>
@@ -344,10 +382,8 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// </summary>
     /// <param name="collection">The items to fill the collection with, after clearing it.</param>
     /// <exception cref="ArgumentNullException"><paramref name="collection"/> is null.</exception>
-    public void ReplaceRange(IEnumerable<T> collection)
-    {
+    public void ReplaceRange(IEnumerable<T> collection) =>
         ReplaceRange(0, Count, collection);
-    }
 
     /// <summary>
     /// Removes the specified range and inserts the specified collection in its position, leaving equal items in equal positions intact.
@@ -361,25 +397,26 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <exception cref="ArgumentNullException"><paramref name="comparer"/> is null.</exception>
     public void ReplaceRange(int index, int count, IEnumerable<T> collection)
     {
-        if (index < 0)
-            throw new ArgumentOutOfRangeException(nameof(index));
-        if (count < 0)
-            throw new ArgumentOutOfRangeException(nameof(count));
-        if (index + count > Count)
-            throw new ArgumentOutOfRangeException(nameof(index));
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfNegative(count);
 
-        if (collection == null)
-            throw new ArgumentNullException(nameof(collection));
+        if (index + count > Count)
+        {
+            throw new ArgumentOutOfRangeException(nameof(index));
+        }
+
+        ArgumentNullException.ThrowIfNull(collection);
 
         if (!AllowDuplicates)
-            collection =
-                collection
-                    .Distinct(Comparer)
-                    .ToList();
+        {
+            collection = collection
+                .Distinct(Comparer)
+                .ToList();
+        }
 
         if (collection is ICollection<T> countable)
         {
-            if (countable.Count == 0)
+            if (countable.Count is 0)
             {
                 RemoveRange(index, count);
                 return;
@@ -391,14 +428,16 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
             return;
         }
 
-        if (index + count == 0)
+        if (index + count is 0)
         {
             InsertRange(0, collection);
             return;
         }
 
-        if (!(collection is IList<T> list))
+        if (collection is not IList<T> list)
+        {
             list = new List<T>(collection);
+        }
 
         using (BlockReentrancy())
         using (DeferEvents())
@@ -412,46 +451,45 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
                 oldCluster = null;
 
 
-            int i = index;
+            var i = index;
             for (; i < rangeCount && i - index < addedCount; i++)
             {
-                //parallel position
+                // Parallel position
                 T old = this[i], @new = list[i - index];
+
                 if (Comparer.Equals(old, @new))
                 {
                     OnRangeReplaced(i, newCluster!, oldCluster!);
                     continue;
                 }
+
+                Items[i] = @new;
+
+                if (newCluster is null)
+                {
+                    Debug.Assert(oldCluster == null);
+                    newCluster = [@new];
+                    oldCluster = [old];
+                }
                 else
                 {
-                    Items[i] = @new;
-
-                    if (newCluster == null)
-                    {
-                        Debug.Assert(oldCluster == null);
-                        newCluster = new List<T> { @new };
-                        oldCluster = new List<T> { old };
-                    }
-                    else
-                    {
-                        newCluster.Add(@new);
-                        oldCluster!.Add(old);
-                    }
-
-                    changesMade = true;
+                    newCluster.Add(@new);
+                    oldCluster!.Add(old);
                 }
+
+                changesMade = true;
             }
 
             OnRangeReplaced(i, newCluster!, oldCluster!);
 
-            //exceeding position
+            // Exceeding position
             if (count != addedCount)
             {
                 var items = (List<T>)Items;
                 if (count > addedCount)
                 {
                     var removedCount = rangeCount - addedCount;
-                    T[] removed = new T[removedCount];
+                    var removed = new T[removedCount];
                     items.CopyTo(i, removed, 0, removed.Length);
                     items.RemoveRange(i, removedCount);
                     OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed, i));
@@ -459,10 +497,10 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
                 else
                 {
                     var k = i - index;
-                    T[] added = new T[addedCount - k];
-                    for (int j = k; j < addedCount; j++)
+                    var added = new T[addedCount - k];
+                    for (var j = k; j < addedCount; j++)
                     {
-                        T @new = list[j];
+                        var @new = list[j];
                         added[j - k] = @new;
                     }
                     items.InsertRange(i, added);
@@ -495,8 +533,10 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// </summary>
     protected override void ClearItems()
     {
-        if (Count == 0)
+        if (Count is 0)
+        {
             return;
+        }
 
         CheckReentrancy();
         base.ClearItems();
@@ -508,7 +548,9 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     protected override void InsertItem(int index, T item)
     {
         if (!AllowDuplicates && Items.Contains(item))
+        {
             return;
+        }
 
         base.InsertItem(index, item);
     }
@@ -519,14 +561,17 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
         if (AllowDuplicates)
         {
             if (Comparer.Equals(this[index], item))
+            {
                 return;
+            }
         }
-        else
-        if (Items.Contains(item, Comparer))
+        else if (Items.Contains(item, Comparer))
+        {
             return;
+        }
 
         CheckReentrancy();
-        T oldItem = this[index];
+        var oldItem = this[index];
         base.SetItem(index, item);
 
         OnIndexerPropertyChanged();
@@ -544,7 +589,7 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// </remarks>
     protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
     {
-        if (_deferredEvents != null)
+        if (_deferredEvents is not null)
         {
             _deferredEvents.Add(e);
             return;
@@ -568,7 +613,7 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <summary>
     /// Helper to raise Count property and the Indexer property.
     /// </summary>
-    void OnEssentialPropertiesChanged()
+    private void OnEssentialPropertiesChanged()
     {
         OnPropertyChanged(EventArgsCache.CountPropertyChanged);
         OnIndexerPropertyChanged();
@@ -577,19 +622,19 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <summary>
     /// /// Helper to raise a PropertyChanged event for the Indexer property
     /// /// </summary>
-    void OnIndexerPropertyChanged() =>
+    private void OnIndexerPropertyChanged() =>
         OnPropertyChanged(EventArgsCache.IndexerPropertyChanged);
 
     /// <summary>
     /// Helper to raise CollectionChanged event to any listeners
     /// </summary>
-    void OnCollectionChanged(NotifyCollectionChangedAction action, object oldItem, object newItem, int index) =>
+    private void OnCollectionChanged(NotifyCollectionChangedAction action, object oldItem, object newItem, int index) =>
         OnCollectionChanged(new NotifyCollectionChangedEventArgs(action, newItem, oldItem, index));
 
     /// <summary>
     /// Helper to raise CollectionChanged event with action == Reset to any listeners
     /// </summary>
-    void OnCollectionReset() =>
+    private void OnCollectionReset() =>
         OnCollectionChanged(EventArgsCache.ResetCollectionChanged);
 
     /// <summary>
@@ -600,11 +645,11 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     /// <param name="oldCluster"></param>
     //TODO should have really been a local method inside ReplaceRange(int index, int count, IEnumerable<T> collection, IEqualityComparer<T> comparer),
     //move when supported language version updated.
-    void OnRangeReplaced(int followingItemIndex, ICollection<T> newCluster, ICollection<T> oldCluster)
+    private void OnRangeReplaced(int followingItemIndex, ICollection<T> newCluster, ICollection<T> oldCluster)
     {
-        if (oldCluster == null || oldCluster.Count == 0)
+        if (oldCluster is null || oldCluster.Count is 0)
         {
-            Debug.Assert(newCluster == null || newCluster.Count == 0);
+            Debug.Assert(newCluster is null || newCluster.Count is 0);
             return;
         }
 
@@ -628,9 +673,10 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
     //------------------------------------------------------
 
     #region Private Types
-    sealed class DeferredEventsCollection : List<NotifyCollectionChangedEventArgs>, IDisposable
+
+    private sealed class DeferredEventsCollection : List<NotifyCollectionChangedEventArgs>, IDisposable
     {
-        readonly RangeObservableCollection<T> _collection;
+        private readonly RangeObservableCollection<T> _collection;
         public DeferredEventsCollection(RangeObservableCollection<T> collection)
         {
             Debug.Assert(collection != null);
@@ -643,7 +689,9 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
         {
             _collection._deferredEvents = null;
             foreach (var args in this)
+            {
                 _collection.OnCollectionChanged(args);
+            }
         }
     }
 
@@ -656,7 +704,7 @@ public class RangeObservableCollection<T> : ObservableCollection<T>
 /// </remarks>
 internal static class EventArgsCache
 {
-    internal static readonly PropertyChangedEventArgs CountPropertyChanged = new PropertyChangedEventArgs("Count");
-    internal static readonly PropertyChangedEventArgs IndexerPropertyChanged = new PropertyChangedEventArgs("Item[]");
-    internal static readonly NotifyCollectionChangedEventArgs ResetCollectionChanged = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
+    internal static readonly PropertyChangedEventArgs CountPropertyChanged = new("Count");
+    internal static readonly PropertyChangedEventArgs IndexerPropertyChanged = new("Item[]");
+    internal static readonly NotifyCollectionChangedEventArgs ResetCollectionChanged = new(NotifyCollectionChangedAction.Reset);
 }

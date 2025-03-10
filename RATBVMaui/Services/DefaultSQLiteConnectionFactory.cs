@@ -1,15 +1,13 @@
+using SQLite;
+
 namespace RATBVMaui.Services;
 
 public class DefaultSQLiteConnectionFactory : ISQLiteConnectionFactory
 {
-    public ISQLiteAsyncConnection GetAsyncSqlConnection(ISQLiteService sqliteService)
+    public ISQLiteAsyncConnection GetAsyncSqlConnection()
     {
         const string sqliteFilename = "ratbvPrism.sql";
 
-        return sqliteService.GetAsyncConnection(sqliteFilename);
+        return new CustomSQLiteAsyncConnection(sqliteFilename);
     }
-
-    [Obsolete("Please use the GetAsyncSqlConnection method")]
-    public ISQLiteConnection GetSqlConnection(ISQLiteService sqliteService) =>
-        throw new NotImplementedException();
 }
