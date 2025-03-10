@@ -25,6 +25,15 @@ public interface INavigationLifeCycle
 
         page.Appearing += Page_Appearing;
         page.Disappearing += Page_Disappearing;
+        page.ParentChanging += Page_ParentChanging;
+    }
+
+    private void Page_ParentChanging(object? sender, ParentChangingEventArgs e)
+    {
+        if (sender is Page { BindingContext: INavigationAware lifeCycleAware })
+        {
+            //lifeCycleAware.OnParentChanging(e);
+        }
     }
 
     private async void Page_Appearing(object? sender, EventArgs e)
